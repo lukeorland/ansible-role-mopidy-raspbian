@@ -1,0 +1,53 @@
+---
+
+- name: apt-key for mopidy repo
+  apt_key:
+    url: https://apt.mopidy.com/mopidy.gpg
+    state: present
+
+- name: Add mopidy repository into sources list.
+  apt_repository:
+    repo: 'deb http://apt.mopidy.com/ stable main contrib non-free'
+    state: present
+
+- name: Add mopidy source repository into sources list.
+  apt_repository:
+    repo: 'deb-src http://apt.mopidy.com/ stable main contrib non-free'
+    state: present
+
+- name: Install mopidy
+  apt:
+    name: mopidy
+    state: latest
+    update_cache: yes
+  notify: restart mopidy
+
+- name: Start mopidy service and enable on boot
+  service:
+    name: mopidy
+    state: started
+    enabled: yes
+
+- name: Http config
+  ini_file:
+    dest: "{{ mopidy_conf_path }}"
+    section: http
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: yes
+  with_items:
+    - { option: enabled  , value: "{{ 'true' if mopidy_raspbian_enable_http else 'false' }}" }
+    - { option: hostname , value: "{{ mopidy_raspbian_hostname }}" }
+  notify: restart mopidy
+
+- name: MPD config
+  ini_file:
+    dest: "{{ mopidy_conf_path }}"
+    section: mpd
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: yes
+  with_items:
+    - { option: enabled  , value: "{{ 'true' if mopidy_raspbian_enable_mpd else 'false' }}" }
+    - { option: hostname , value: "{{ mopidy_raspbian_hostname }}" }
+  notify: restart mopidy

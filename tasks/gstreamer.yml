@@ -1,0 +1,11 @@
+---
+# Required by SoundCloud
+
+- name: Install gstreamer packages
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+    - gstreamer0.10-alsa
+    - gstreamer0.10-plugins-ugly
